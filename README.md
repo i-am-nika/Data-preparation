@@ -5,8 +5,8 @@ Pre-processing, feature engineering, processing data for ML prediction models
 ## 1 step: PRE-PROCESSING:
 preprocess.py
 
-Pre-process Text Data. The programm takes one command-line argument - a text file for pre-processing. 
-If you run the programm without a command-line argument, 
+Pre-process Text Data. The program takes one command-line argument - a text file for pre-processing. 
+If you run the program without a command-line argument, 
 you'll be asked to type an url of the website you want to pre-process.
 
 The programm gives you the choice to make any/all of the following steps:
