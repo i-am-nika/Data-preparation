@@ -41,7 +41,7 @@ def clean_html(data):
     return text
 
 def tokenize_remove_punct(text):
-    tokens = re.findall(r"\w+", text) # remove punctuation 
+    tokens = re.findall(r"\w+", str(text)) # remove punctuation 
     words = [] 
     for word in tokens: 
         words.append(word.lower())
@@ -54,9 +54,25 @@ def tokenize_keep_punct(text):
         words.append(word.lower())
     return words
 
+def remove_capit(words):
+    words_l = []
+    for word in words:
+        words_l.append(word.lower())
+    return words_l
+
 def del_stopwords(words):
     without_stopwords = []
     stop_words = nltk.corpus.stopwords.words("english")
+    print("English stopwords: ", stop_words)
+    for word in words:
+       if word not in stop_words:
+           without_stopwords.append(word)
+    return without_stopwords
+
+def own_stopwords(words, own_list):
+    without_stopwords = []
+    stop_words = own_list.split(",")
+    print("Own stopwords: ", stop_words)
     for word in words:
        if word not in stop_words:
            without_stopwords.append(word)
@@ -85,8 +101,10 @@ if __name__ == "__main__":
     choice = input("Do you want to clean data from html tags? (yes / no) Your choice: ")
     if choice == "yes":
         text = clean_html(data)
+        print(text)
     else:
         text = data
+        print(text)
 
     choice = input("Do you want to tokenize your data? (yes / no) Your choice: ")
     if choice == "yes":
@@ -98,11 +116,24 @@ if __name__ == "__main__":
     else:
         words = text
 
+    choice = input("Do you want to remove capitalisation? (yes / no) Your choice: ")
+    if choice == "yes":
+        words_low = remove_capit(words)
+    else:
+        words_low = words
+
     choice = input("Do you want to delete stopwords? (yes / no) Your choice: ")
     if choice == "yes":
-        without_stopwords = del_stopwords(words)
+        without_stopwords = del_stopwords(words_low)
     else:
-        without_stopwords = words
+        without_stopwords = words_low
+
+    choice = input("Do you want to delete your own stopwords? (yes / no) Your choice: ")
+    if choice == "yes":
+        own_list = input("Please type your own stopwords separated by commas (for example: am, i, if ) Your choice: ")
+        without_stopwords = own_stopwords(words_low, own_list)
+    else:
+        pass
 
     choice = input("Do you want to make lemmatisation? (yes / no) Your choice: ")
     if choice == "yes":
@@ -116,27 +147,24 @@ if __name__ == "__main__":
     else:
         lemmas = without_stopwords
 
+    choice = input("Do you want to see Frequency Distribution of words? (yes / no) Your choice: ")
+    if choice == "yes":
+        sns.set() 
+        freqdist1 = nltk.FreqDist(lemmas) 
+        freqdist1.plot(25)
 
     choice = input("Do you want to write output to a file? (yes / no) Your choice: ")
     if choice == "yes":
         choice = input("Please type the filename with the path (for example: /myfiles/output.txt or output.txt (if you want to create an output file in the current directory). Your output file: ")
-
         try:
             output_file = open(choice, 'w')
             choice = input("Do you want to remove duplicates of words? (yes / no) Your choice: ")
             if choice == "yes":
                 words = set(lemmas) # remove duplicates
             else:
-                words = lemmas
-                choice = input("Do you want to see Frequency Distribution of words? (yes / no) Your choice: ")
-                if choice == "yes":
-                    sns.set() 
-                    freqdist1 = nltk.FreqDist(words) 
-                    freqdist1.plot(25)
-                else:
-                    pass 
+                words = lemmas            
             print("Writing output to a file...")
-            for word in sorted(words): # or sorted(words):
+            for word in sorted(words): 
                 print(word, file = output_file)
             print("Done.")
         except:
