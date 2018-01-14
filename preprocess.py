@@ -10,7 +10,7 @@ you'll be asked to type an url of the website you want to pre-process.
 #usage:
 #$ ./preprocess.py
  #__author__ = "Tetyana Chernenko"
-#__copyright__ = "Copyright (c) 2017 Tetyana Chernenko"
+#__copyright__ = "Copyright (c) 2017, 2018 Tetyana Chernenko"
 #__credits__ = ["Tetyana Chernenko"]
 #__license__ = "GNU General Public License v3.0"
 #__version__ = "1.0.0"
@@ -43,15 +43,21 @@ def clean_html(data):
 def tokenize_remove_punct(text):
     tokens = re.findall(r"\w+", str(text)) # remove punctuation 
     words = [] 
-    for word in tokens: 
-        words.append(word.lower())
+    for word in tokens:
+        if word == "n": 
+            words.append(" ")
+        else:
+            words.append(word.lower())
     return words
 
 def tokenize_keep_punct(text):
-    tokens = re.findall(r"\w+(?:[-']\w+)*|'|[-.(]+|\s\w*", text) # don't remove punctuation
+    tokens = re.findall(r"\w+(?:[-']\w+)*|'|[-.(]+|\s\w*", str(text)) # don't remove punctuation
     words = [] 
-    for word in tokens: 
-        words.append(word.lower())
+    for word in tokens:
+        if word == "n": 
+            words.append(" ")
+        else: 
+            words.append(word.lower())
     return words
 
 def remove_capit(words):
@@ -67,11 +73,12 @@ def del_stopwords(words):
     for word in words:
        if word not in stop_words:
            without_stopwords.append(word)
+    print(without_stopwords)
     return without_stopwords
 
 def own_stopwords(words, own_list):
     without_stopwords = []
-    stop_words = own_list.split(",")
+    stop_words = own_list.split(", ")
     print("Own stopwords: ", stop_words)
     for word in words:
        if word not in stop_words:
@@ -87,6 +94,7 @@ def lemm(without_stopwords):
     wnl = nltk.WordNetLemmatizer()
     lemmas = [wnl.lemmatize(t) for t in without_stopwords]
     return lemmas 
+
 
 if __name__ == "__main__":
     arg_list = sys.argv
@@ -131,17 +139,17 @@ if __name__ == "__main__":
     choice = input("Do you want to delete your own stopwords? (yes / no) Your choice: ")
     if choice == "yes":
         own_list = input("Please type your own stopwords separated by commas (for example: am, i, if ) Your choice: ")
-        without_stopwords = own_stopwords(words_low, own_list)
+        without_stopwords = own_stopwords(without_stopwords, own_list)
     else:
         pass
 
-    choice = input("Do you want to make lemmatisation? (yes / no) Your choice: ")
+    choice = input("Do you want to make stemming? (yes / no) Your choice: ")
     if choice == "yes":
         without_stopwords = stem(without_stopwords)
     else:
         pass
 
-    choice = input("Do you want to make stemming? (yes / no) Your choice: ")
+    choice = input("Do you want to make lemmatization? (yes / no) Your choice: ")
     if choice == "yes":
         lemmas = lemm(without_stopwords)
     else:
@@ -149,8 +157,12 @@ if __name__ == "__main__":
 
     choice = input("Do you want to see Frequency Distribution of words? (yes / no) Your choice: ")
     if choice == "yes":
+        lemmas_without_empty_lines = []
+        for lemma in lemmas:
+            if lemma.split():
+                lemmas_without_empty_lines.append(lemma)
         sns.set() 
-        freqdist1 = nltk.FreqDist(lemmas) 
+        freqdist1 = nltk.FreqDist(lemmas_without_empty_lines) 
         freqdist1.plot(25)
 
     choice = input("Do you want to write output to a file? (yes / no) Your choice: ")
@@ -164,9 +176,16 @@ if __name__ == "__main__":
             else:
                 words = lemmas            
             print("Writing output to a file...")
-            for word in sorted(words): 
-                print(word, file = output_file)
-            print("Done.")
+            choice = input("Do you want to sort your tokens alphabetically (and remove empty lines between sentences)? (yes / no) Your choice: ")
+            if choice == "yes":
+                for word in sorted(words): 
+                    if word.split():
+                        print(word, file = output_file)
+                print("Done.")
+            else:
+                for word in words: 
+                    print(word, file = output_file)
+                print("Done.")
         except:
             print("Incorrect filename or path.")
     
